@@ -1,0 +1,54 @@
+{
+  "dxt_version": "0.1",
+  "name": "wslexec",
+  "version": "1.1.1",
+  "description": "WSL Linux上でbash実行・ファイル読み書きを行うMCPサーバー",
+  "author": {
+    "name": "T.Nosaka"
+  },
+  "server": {
+    "type": "node",
+    "entry_point": "server/index.js",
+    "mcp_config": {
+      "command": "node",
+      "args": [
+        "${__dirname}/server/index.js"
+      ],
+      "env": {
+        "WSL_DISTRO": "${user_config.wsl_distro}",
+        "WSL_USER": "${user_config.wsl_user}"
+      }
+    }
+  },
+  "tools": [
+    {
+      "name": "run_bash",
+      "description": "WSL上でbashコマンドを実行する"
+    },
+    {
+      "name": "read_file",
+      "description": "WSL上のファイルを読み込む"
+    },
+    {
+      "name": "write_file",
+      "description": "WSL上のファイルに書き込む"
+    }
+  ],
+  "user_config": {
+    "wsl_distro": {
+      "type": "string",
+      "title": "WSLディストリビューション名",
+      "description": "対象のWSLディストリ名（空欄なら既定のディストリを使用）",
+      "default": "",
+      "required": false
+    },
+    "wsl_user": {
+      "type": "string",
+      "title": "実行ユーザー名",
+      "description": "bashを実行するLinuxユーザー名（空欄なら既定ユーザー）。例: claude",
+      "default": "",
+      "required": false
+    }
+  },
+  "license": "MIT"
+}

@@ -1,0 +1,11 @@
+{
+  "name": "shellmcpserver-bridge",
+  "version": "1.0.0",
+  "description": "MCP server running bash on WSL via wsl.exe",
+  "type": "module",
+  "main": "index.js",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1",
+    "zod": "^3.23.8"
+  }
+}
