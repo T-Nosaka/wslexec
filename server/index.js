@@ -18,6 +18,10 @@ const DISTRO = process.env.WSL_DISTRO ?? "";
 // 実行ユーザー（空ならWSLの既定ユーザー）
 const WSL_USER = process.env.WSL_USER ?? "";
 
+// デフォルトタイムアウト（環境変数 WSL_TIMEOUT_MS で上書き可能、デフォルト2分）
+const DEFAULT_TIMEOUT_MS = parseInt(process.env.WSL_TIMEOUT_MS ?? "120000");
+process.stderr.write(`[shellmcp] default timeout: ${DEFAULT_TIMEOUT_MS}ms\n`);
+
 // wsl.exe 共通の先頭引数（-d / -u）を組み立てる
 function baseArgs() {
   const args = [];
@@ -34,7 +38,7 @@ function runWsl(extraArgs, { stdinData, timeout_ms, encoding } = {}) {
       "wsl.exe",
       args,
       {
-        timeout: timeout_ms ?? 30000,
+        timeout: timeout_ms ?? DEFAULT_TIMEOUT_MS,
         maxBuffer: 50 * 1024 * 1024,
         encoding: encoding ?? "utf8",
         windowsHide: true,
@@ -62,6 +66,7 @@ server.registerTool(
     title: "Run Bash",
     description: [
       "WSL上でbashコマンドを実行する。クォートや特殊文字を含むコマンドもそのまま渡せる。",
+      `デフォルトタイムアウトは環境変数 WSL_TIMEOUT_MS で変更可能（現在: ${DEFAULT_TIMEOUT_MS}ms）。`,
       "戻り値はJSON形式で以下のフィールドを含む:",
       "  stdout: 標準出力の内容（文字列）",
       "  stderr: 標準エラー出力の内容（文字列）",
@@ -70,7 +75,7 @@ server.registerTool(
     inputSchema: {
       command: z.string().describe("実行するbashコマンド(複数行可)"),
       cwd: z.string().optional().describe("作業ディレクトリの絶対パス(省略時はホーム)"),
-      timeout_ms: z.number().optional().describe("タイムアウト(ms)、デフォルト30000"),
+      timeout_ms: z.number().optional().describe(`タイムアウト(ms)、省略時は環境変数 WSL_TIMEOUT_MS の値（デフォルト: ${DEFAULT_TIMEOUT_MS}ms）`),
     },
   },
   async ({ command, cwd, timeout_ms }) => {
