@@ -60,10 +60,16 @@ server.registerTool(
   "run_bash",
   {
     title: "Run Bash",
-    description: "WSL上でbashコマンドを実行する。クォートや特殊文字を含むコマンドもそのまま渡せる",
+    description: [
+      "WSL上でbashコマンドを実行する。クォートや特殊文字を含むコマンドもそのまま渡せる。",
+      "戻り値はJSON形式で以下のフィールドを含む:",
+      "  stdout: 標準出力の内容（文字列）",
+      "  stderr: 標準エラー出力の内容（文字列）",
+      "  error:  実行エラーのメッセージ。正常終了時はnull",
+    ].join("\n"),
     inputSchema: {
-      command: z.string().describe("実行するbashコマンド（複数行可）"),
-      cwd: z.string().optional().describe("作業ディレクトリの絶対パス（省略時はホーム）"),
+      command: z.string().describe("実行するbashコマンド(複数行可)"),
+      cwd: z.string().optional().describe("作業ディレクトリの絶対パス(省略時はホーム)"),
       timeout_ms: z.number().optional().describe("タイムアウト(ms)、デフォルト30000"),
     },
   },
@@ -74,13 +80,17 @@ server.registerTool(
     extra.push("--", "bash", "-s");
 
     const { err, stdout, stderr } = await runWsl(extra, { stdinData: command, timeout_ms });
-    if (err) {
-      return {
-        content: [{ type: "text", text: `エラー: ${err.message}\n${stderr ?? ""}` }],
-        isError: true,
-      };
-    }
-    return { content: [{ type: "text", text: stdout || stderr || "(出力なし)" }] };
+
+    const result = {
+      stdout: stdout || "",
+      stderr: stderr || "",
+      error: err ? err.message : null,
+    };
+
+    return {
+      content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+      isError: !!err,
+    };
   }
 );
 
@@ -111,7 +121,7 @@ server.registerTool(
   "write_file",
   {
     title: "Write File",
-    description: "WSL上のファイルに内容を書き込む（既存ファイルは上書き）",
+    description: "WSL上のファイルに内容を書き込む(既存ファイルは上書き)",
     inputSchema: {
       path: z.string().describe("書き込み先ファイルの絶対パス"),
       content: z.string().describe("ファイルに書き込む内容"),

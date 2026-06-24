@@ -1,4 +1,7 @@
 /node_modules
 
+# svn
+.svn
+
 # VSCODE
 *.code-workspace
